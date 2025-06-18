@@ -1,31 +1,12 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
-//    id 'com.vanniktech.maven.publish'
+    id 'com.vanniktech.maven.publish'
 //    id 'org.jetbrains.dokka'
 }
 
-//mavenPublishing {
-//    coordinates("io.github.petterpx", "floatingx", version_name)
-//}
-apply plugin: 'maven-publish'
-
-// 发布到 远程/本地仓库 相关配置
-publishing {
-    publications {
-        github(MavenPublication) {
-            // 配置上传内容
-            // components.java 是打包的 jar 包
-            from components.apk
-            // 指定自定义 Gradle 插件的分组
-            group 'com.github.Alkimoro'
-
-            // 指定自定义 Gradle 插件的版本号
-            version '1.0.0-gate.4'
-            // 指定自定义 Gradle 插件名称
-            artifactId 'FloatingX'
-        }
-    }
+mavenPublishing {
+    coordinates("com.github.Alkimoro", "FloatingX", '1.0.0-gate.4')
 }
 
 android {
