@@ -17,7 +17,7 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "FloatingX"
-include ':app'
+//include ':app'
 include ':floatingx'
 include ':floatingx_compose'
 
