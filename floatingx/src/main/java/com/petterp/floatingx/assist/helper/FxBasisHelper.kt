@@ -128,6 +128,25 @@ abstract class FxBasisHelper {
     @JvmField
     internal var reInstall: Boolean = false
 
+    @JvmField
+    internal var appScopeShowAniEnd: (() -> Unit)? = null
+
+    @JvmField
+    internal var appScopeShowAniStart: (() -> Unit)? = null
+
+    @JvmField
+    internal var rootConfigurationChanged: (() -> Unit)? = null
+
+    @JvmField
+    internal var onReAttach: (() -> Unit)? = null
+
+    @JvmField
+    internal var enableAttachExpandAni = false
+
+    @JvmField
+    internal var rootViewXOffset: (() -> Int)? = null
+
+
     @JvmSynthetic
     internal fun initLog(scope: String) {
         fxLog = FxLog.builder(enableDebugLog, "$scope-$fxLogTag")
@@ -190,6 +209,13 @@ abstract class FxBasisHelper {
         private var ifxLongClickListener: View.OnLongClickListener? = null
         private var iFxViewLifecycles: MutableList<IFxViewLifecycle> = mutableListOf()
 
+        private var appScopeShowAniEnd: (() -> Unit)? = null
+        private var appScopeShowAniStart: (() -> Unit)? = null
+        private var rootConfigurationChanged: (() -> Unit)? = null
+        private var onReAttach: (() -> Unit)? = null
+        private var enableAttachExpandAni = false
+        private var rootViewXOffset: (() -> Int)? = null
+
         protected abstract fun buildHelper(): B
 
         open fun build(): B =
@@ -231,6 +257,12 @@ abstract class FxBasisHelper {
                 iFxConfigStorage = this@Builder.iFxConfigStorage
                 iFxClickListener = this@Builder.ifxClickListener
                 iFxLongClickListener = this@Builder.ifxLongClickListener
+                appScopeShowAniEnd = this@Builder.appScopeShowAniEnd
+                appScopeShowAniStart = this@Builder.appScopeShowAniStart
+                rootConfigurationChanged = this@Builder.rootConfigurationChanged
+                onReAttach = this@Builder.onReAttach
+                enableAttachExpandAni = this@Builder.enableAttachExpandAni
+                rootViewXOffset = this@Builder.rootViewXOffset
             }
 
         /** 设置悬浮窗view的layout */
@@ -244,6 +276,36 @@ abstract class FxBasisHelper {
         fun setLayoutView(view: View): T {
             layoutId = 0
             this.layoutView = view
+            return this as T
+        }
+
+        fun setRootViewXOffset(callback: () -> Int): T {
+            this.rootViewXOffset = callback
+            return this as T
+        }
+
+        fun setAppScopeShowAniEndCallback(callback: () -> Unit): T {
+            this.appScopeShowAniEnd = callback
+            return this as T
+        }
+
+        fun setAppScopeShowAniStartCallback(callback: () -> Unit): T {
+            this.appScopeShowAniStart = callback
+            return this as T
+        }
+
+        fun setConfigurationChangedCallback(callback: () -> Unit): T {
+            this.rootConfigurationChanged = callback
+            return this as T
+        }
+
+        fun setOnReAttach(callback: () -> Unit): T {
+            this.onReAttach = callback
+            return this as T
+        }
+
+        fun enableAttachExpandAni(enable: Boolean): T {
+            this.enableAttachExpandAni = enable
             return this as T
         }
 

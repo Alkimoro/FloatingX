@@ -85,7 +85,7 @@ class FxViewLocationHelper : FxViewBasicHelper(), View.OnLayoutChangeListener {
         if (needUpdateLocation) {
             checkOrRestoreLocation()
         } else {
-            basicView?.internalMoveToXY(safeX(x), safeY(y))
+            //basicView?.internalMoveToXY(x, y)
         }
     }
 
@@ -150,28 +150,29 @@ class FxViewLocationHelper : FxViewBasicHelper(), View.OnLayoutChangeListener {
     fun checkOrSaveLocation(x: Float, y: Float) {
         if (config.iFxConfigStorage == null || !config.enableSaveDirection) return
         config.iFxConfigStorage!!.update(x, y)
-        config.fxLog.d("saveLocation -> x:$x,y:$y")
+        //config.fxLog.d("saveLocation -> x:$x,y:$y")
     }
 
     private fun getAdsorbDirectionLocation(
         isNearestLeft: Boolean,
         isNearestTop: Boolean
     ): Pair<Float, Float> {
+        val xOffset = config?.rootViewXOffset?.invoke() ?: 0
         return when (config.adsorbDirection) {
             FxAdsorbDirection.LEFT -> {
-                val moveX = moveBoundary.minW
+                val moveX = xOffset.toFloat()
                 val moveY = safeY(y)
                 moveX to moveY
             }
 
             FxAdsorbDirection.RIGHT -> {
-                val moveX = moveBoundary.maxW
+                val moveX = parentW - viewW - xOffset
                 val moveY = safeY(y)
                 moveX to moveY
             }
 
             FxAdsorbDirection.LEFT_OR_RIGHT -> {
-                val moveX = if (isNearestLeft) moveBoundary.minW else moveBoundary.maxW
+                val moveX = if (isNearestLeft) xOffset.toFloat() else parentW - viewW - xOffset
                 val moveY = safeY(y)
                 moveX to moveY
             }
@@ -210,7 +211,7 @@ class FxViewLocationHelper : FxViewBasicHelper(), View.OnLayoutChangeListener {
         this.viewW = viewW
         this.viewH = viewH
         updateMoveBoundary()
-        config.fxLog.d("fxView -> updateSize: parentW:$parentW,parentH:$parentH,viewW:$viewW,viewH:$viewH")
+        //config.fxLog.d("fxView -> updateSize: parentW:$parentW,parentH:$parentH,viewW:$viewW,viewH:$viewH")
     }
 
     private fun isNearestLeft(x: Float): Boolean {
@@ -218,6 +219,22 @@ class FxViewLocationHelper : FxViewBasicHelper(), View.OnLayoutChangeListener {
         val viewMiddlePoint = x + viewW / 2
         return viewMiddlePoint < middle
     }
+
+    fun selfNearestLeft() = isNearestLeft(this.x)
+
+    fun getParentSize() = Pair(parentW, parentH)
+
+    fun getOutScreenPercentage(): Float {
+        if (this.x <= 0) {
+            return this.x / viewW
+        }
+        if ((this.x + viewW) >= parentW) {
+            return (parentW - (this.x + viewW)) / viewW
+        }
+        return 0F
+    }
+
+    fun getNavBarHeight() = config.navigationBarHeight
 
     private fun isNearestTop(y: Float): Boolean {
         val middle = parentH / 2
@@ -275,7 +292,7 @@ class FxViewLocationHelper : FxViewBasicHelper(), View.OnLayoutChangeListener {
                 val halfWidth = viewW * halfHidePercent
                 moveIngBoundary.apply {
                     minW = -halfWidth
-                    maxW = parentW - halfWidth
+                    maxW = parentW - viewW + halfWidth
                     minH = statsBarHeight.toFloat()
                     maxH = parentH - viewH - navigationBarHeight
                 }
@@ -297,14 +314,14 @@ class FxViewLocationHelper : FxViewBasicHelper(), View.OnLayoutChangeListener {
                     maxH -= fxBorderMargin.b + edgeOffset
                 }
             }
-            config.fxLog.d("fxView -> updateMoveBoundary, moveBoundary:$moveBoundary")
-            config.fxLog.d("fxView -> updateMoveIngBoundary, moveIngBoundary:$moveIngBoundary")
+            //config.fxLog.d("fxView -> updateMoveBoundary, moveBoundary:$moveBoundary")
+            //config.fxLog.d("fxView -> updateMoveIngBoundary, moveIngBoundary:$moveIngBoundary")
         }
     }
 
     private fun checkOrRestoreLocation() {
         if (isInitLocation) return
-        config.fxLog.d("fxView -> restoreLocation,start")
+        //config.fxLog.d("fxView -> restoreLocation,start")
         val (restoreX, restoreY) = if (config.enableEdgeAdsorption) {
             // 如果是由configChange触发，则优先使用之前保存的
             val (isNearestLeft, isNearestTop) = if (needUpdateConfig) {
@@ -321,6 +338,6 @@ class FxViewLocationHelper : FxViewBasicHelper(), View.OnLayoutChangeListener {
         needUpdateLocation = false
         needUpdateConfig = false
         basicView?.internalMoveToXY(restoreX, restoreY)
-        config.fxLog.d("fxView -> restoreLocation,success")
+        //config.fxLog.d("fxView -> restoreLocation,success")
     }
 }

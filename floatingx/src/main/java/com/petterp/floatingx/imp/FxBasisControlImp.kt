@@ -1,6 +1,7 @@
 package com.petterp.floatingx.imp
 
 import android.view.View
+import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import com.petterp.floatingx.assist.helper.FxBasisHelper
 import com.petterp.floatingx.listener.control.IFxConfigControl
@@ -33,6 +34,9 @@ abstract class FxBasisControlImp<F : FxBasisHelper, P : IFxPlatformProvider<F>>(
     override fun getView() = internalView?.childView
     override fun getViewHolder() = internalView?.viewHolder
     override fun getManagerView() = internalView?.containerView
+    override fun isNearestLeft(): Boolean = internalView?.isNearestLeft() != false
+    override fun getParentSize(): Pair<Float, Float> = internalView?.getParentSize() ?: Pair(0F, 0F)
+    override fun getNavBarHeight(): Int = internalView?.getNavBarHeight() ?: 0
 
     abstract fun createPlatformProvider(f: F): P
     open fun createConfigProvider(f: F, p: P): IFxConfigControl = FxBasicConfigProvider(f, p)
@@ -44,13 +48,16 @@ abstract class FxBasisControlImp<F : FxBasisHelper, P : IFxPlatformProvider<F>>(
         _configControl = createConfigProvider(helper, platformProvider)
     }
 
-    override fun show() {
+    override fun disableReAttach() { }
+
+    override fun show(onShow: ((view: FrameLayout) -> Unit)?) {
         if (isShow()) return
         helper.enableFx = true
         if (!platformProvider.checkOrInit()) return
         // FIXME: 这里有可能会触发多次show
         val fxView = getManagerView() ?: return
         platformProvider.show()
+        onShow?.invoke(fxView)
         helper.fxLog.d("fxView -> showFx")
         if (_animationProvider.canRunAnimation()) {
             _animationProvider.start(fxView)

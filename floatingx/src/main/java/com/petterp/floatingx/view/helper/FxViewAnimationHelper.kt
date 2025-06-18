@@ -1,5 +1,6 @@
 package com.petterp.floatingx.view.helper
 
+import android.animation.Animator
 import android.animation.ValueAnimator
 import com.petterp.floatingx.util.DEFAULT_MOVE_ANIMATOR_DURATION
 
@@ -13,16 +14,21 @@ class FxViewAnimationHelper : FxViewBasicHelper() {
     private var startY: Float = 0f
     private var endX: Float = 0f
     private var endY: Float = 0f
+    private val callbacks = ArrayList<() -> Unit>()
 
-    fun start(endX: Float, endY: Float) {
+    fun start(endX: Float, endY: Float, onEnd: (() -> Unit)? = null) {
         val startX = basicView?.x ?: 0f
         val startY = basicView?.y ?: 0f
-        if (startX == endX && startY == endY) return
+        if (startX == endX && startY == endY) {
+            onEnd?.invoke()
+            return
+        }
         this.startX = startX
         this.startY = startY
         this.endX = endX
         this.endY = endY
         checkOrInitAnimator()
+        onEnd?.let { callbacks.add(onEnd) }
         if (valueAnimator?.isRunning == true) valueAnimator?.cancel()
         valueAnimator?.start()
     }
@@ -37,6 +43,18 @@ class FxViewAnimationHelper : FxViewBasicHelper() {
                     val y = calculationNumber(startY, endY, fraction)
                     basicView?.updateXY(x, y)
                 }
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationStart(animation: Animator) { }
+
+                    override fun onAnimationEnd(animation: Animator) {
+                        callbacks.forEach { it.invoke() }
+                        callbacks.clear()
+                    }
+
+                    override fun onAnimationCancel(animation: Animator) { }
+
+                    override fun onAnimationRepeat(animation: Animator) { }
+                })
             }
         }
     }

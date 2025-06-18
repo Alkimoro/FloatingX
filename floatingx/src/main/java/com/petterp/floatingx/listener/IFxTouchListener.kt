@@ -20,7 +20,7 @@ interface IFxTouchListener {
     fun onDown() {}
 
     /** 松开 */
-    fun onUp() {}
+    fun onUp(outScreenPercentage: Float, isClickEvent: Boolean) {}
 
     /**
      * 监测当前移动浮窗的手指 move回调

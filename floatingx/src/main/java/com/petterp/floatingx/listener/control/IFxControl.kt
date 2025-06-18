@@ -13,7 +13,7 @@ interface IFxControl {
     /** 获取配置层控制器,以便运行时动态调整某些基础配置 */
     val configControl: IFxConfigControl
 
-    fun show()
+    fun show(onShow: ((view: FrameLayout) -> Unit)? = null)
 
     /** 隐藏悬浮窗-不会解绑app-lifecycle */
     fun hide()
@@ -27,6 +27,8 @@ interface IFxControl {
      * 在全局浮窗,如果当前浮窗个数为0时，我们将移除所有配置监听，比如取消AppLifecycle的订阅
      */
     fun cancel()
+
+    fun disableReAttach()
 
     /** 获取相对浮窗容器的 x坐标 */
     fun getX(): Float
@@ -42,6 +44,12 @@ interface IFxControl {
 
     /** 获取浮窗管理器view,即浮窗底层容器 */
     fun getManagerView(): FrameLayout?
+
+    fun isNearestLeft(): Boolean
+
+    fun getParentSize(): Pair<Float, Float>
+
+    fun getNavBarHeight(): Int
 
     /** 用于快速刷新视图内容 */
     fun updateViewContent(provider: IFxHolderProvider)

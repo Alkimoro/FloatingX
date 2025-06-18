@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import androidx.annotation.IdRes
 import com.petterp.floatingx.assist.FxScopeType
+import com.petterp.floatingx.imp.FxAppLifecycleProvider
 import com.petterp.floatingx.listener.IFxPermissionInterceptor
 import com.petterp.floatingx.listener.IFxProxyTagActivityLifecycle
 import com.petterp.floatingx.util.FX_DEFAULT_TAG
@@ -83,7 +84,7 @@ class FxAppHelper(
         private var fxLifecycleExpand: IFxProxyTagActivityLifecycle? = null
         private var askPermissionInterceptor: IFxPermissionInterceptor? = null
         private var whiteInsertList: MutableList<String> = mutableListOf()
-        private var blackFilterList: MutableList<String> = mutableListOf()
+        private val blackFilterList: MutableList<String> = ArrayList(FxAppLifecycleProvider.blockList)
 
         /**
          * 设置context

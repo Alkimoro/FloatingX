@@ -14,7 +14,7 @@ import com.petterp.floatingx.imp.FxAppLifecycleProvider
 class FxContentProvider : ContentProvider() {
     override fun onCreate(): Boolean {
         val application = context?.applicationContext as? Application ?: return true
-        application.registerActivityLifecycleCallbacks(FxAppLifecycleProvider())
+        application.registerActivityLifecycleCallbacks(FxAppLifecycleProvider)
         return true
     }
 

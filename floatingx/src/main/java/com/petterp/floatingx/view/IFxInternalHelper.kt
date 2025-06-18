@@ -18,7 +18,7 @@ interface IFxInternalHelper {
 
     val viewHolder: FxViewHolder?
 
-    fun moveLocation(x: Float, y: Float, useAnimation: Boolean = true)
+    fun moveLocation(x: Float, y: Float, useAnimation: Boolean = true, onEnd: (() -> Unit)? = null)
 
     fun moveLocationByVector(x: Float, y: Float, useAnimation: Boolean = true)
 
@@ -26,7 +26,15 @@ interface IFxInternalHelper {
 
     fun checkPointerDownTouch(@IdRes id: Int, event: MotionEvent): Boolean
 
-    fun moveToEdge()
+    fun moveToEdge(onEnd: (() -> Unit)? = null)
+
+    fun getOutScreenPercentage(): Float
+
+    fun getNavBarHeight(): Int
+
+    fun isNearestLeft(): Boolean
+
+    fun getParentSize(): Pair<Float, Float>
 
     fun updateView(@LayoutRes layoutId: Int)
 

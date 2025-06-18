@@ -33,6 +33,8 @@ abstract class FxBasicContainerView @JvmOverloads constructor(
     internal val locationHelper = FxViewLocationHelper()
     private val helpers = listOf(locationHelper, touchHelper, animateHelper)
 
+    var skipLayout = false
+
     abstract fun updateXY(x: Float, y: Float)
     abstract fun parentSize(): Pair<Int, Int>?
 
@@ -47,6 +49,10 @@ abstract class FxBasicContainerView @JvmOverloads constructor(
     override val containerView: FrameLayout get() = this
     override val viewHolder: FxViewHolder? get() = _viewHolder
 
+//
+//    final override fun setCardBackgroundColor(color: Int) {
+//        super.setCardBackgroundColor(color)
+//    }
 
     open fun initView() {
         helpers.forEach { it.initConfig(this) }
@@ -54,14 +60,32 @@ abstract class FxBasicContainerView @JvmOverloads constructor(
         visibility = View.INVISIBLE
     }
 
-    override fun moveToEdge() {
-        val (x, y) = locationHelper.getDefaultEdgeXY() ?: return
-        moveLocation(x, y, true)
+    override fun moveToEdge(onEnd: (() -> Unit)?) {
+        val p = locationHelper.getDefaultEdgeXY()
+        if (p == null) {
+            onEnd?.invoke()
+            return
+        }
+        moveLocation(p.first, p.second, true, onEnd)
     }
 
-    override fun moveLocation(x: Float, y: Float, useAnimation: Boolean) {
+    override fun getOutScreenPercentage(): Float {
+        return locationHelper.getOutScreenPercentage()
+    }
+
+    override fun getNavBarHeight() = locationHelper.getNavBarHeight()
+
+    override fun isNearestLeft(): Boolean {
+        return locationHelper.selfNearestLeft()
+    }
+
+    override fun getParentSize(): Pair<Float, Float> {
+        return locationHelper.getParentSize()
+    }
+
+    override fun moveLocation(x: Float, y: Float, useAnimation: Boolean, onEnd: (() -> Unit)?) {
         // 需要考虑状态栏的影响
-        safeMoveToXY(x, y, useAnimation)
+        safeMoveToXY(x, y, useAnimation, onEnd)
     }
 
     override fun moveLocationByVector(x: Float, y: Float, useAnimation: Boolean) {
@@ -108,7 +132,35 @@ abstract class FxBasicContainerView @JvmOverloads constructor(
         helpers.forEach { it.onSizeChanged(w, h, oldw, oldh) }
     }
 
+    private var aniL: Int = 0
+    private var aniT: Int = 0
+    private var aniR: Int = 0
+    private var aniB: Int = 0
+    fun setAniL(l: Int) {
+        aniL = l
+        this.left = l
+    }
+    fun setAniT(t: Int) {
+        aniT = t
+        this.top = t
+    }
+    fun setAniR(r: Int) {
+        aniR = r
+        this.right = r
+    }
+    fun setAniB(b: Int) {
+        aniB = b
+        this.bottom = b
+    }
+
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        if (skipLayout) {
+            this.left = aniL
+            this.right = aniR
+            this.top = aniT
+            this.bottom = aniB
+        }
+
         super.onLayout(changed, left, top, right, bottom)
         if (!isInitLayout) return
         isInitLayout = false
@@ -123,6 +175,8 @@ abstract class FxBasicContainerView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        val isIntercept = helper.iFxTouchListener?.onInterceptTouchEvent(event, this) ?: true
+        if (!isIntercept) return false
         return touchHelper.touchEvent(event, this) || super.onTouchEvent(event)
     }
 
@@ -136,6 +190,7 @@ abstract class FxBasicContainerView @JvmOverloads constructor(
     override fun onConfigurationChanged(newConfig: Configuration?) {
         super.onConfigurationChanged(newConfig ?: return)
         helpers.forEach { it.onConfigurationChanged(newConfig) }
+        helper.rootConfigurationChanged?.invoke()
     }
 
     protected fun safeUpdatingXY(x: Float, y: Float) {
@@ -189,23 +244,27 @@ abstract class FxBasicContainerView @JvmOverloads constructor(
         return view
     }
 
-    private fun safeMoveToXY(x: Float, y: Float, useAnimation: Boolean) {
+    private fun safeMoveToXY(x: Float, y: Float, useAnimation: Boolean, onEnd: (() -> Unit)? = null) {
         val endX = locationHelper.safeX(x)
         val endY = locationHelper.safeY(y)
-        internalMoveToXY(endX, endY, useAnimation)
+        internalMoveToXY(endX, endY, useAnimation, onEnd)
     }
 
-    internal fun internalMoveToXY(endX: Float, endY: Float, useAnimation: Boolean = false) {
+    internal fun internalMoveToXY(endX: Float, endY: Float, useAnimation: Boolean = false, onEnd: (() -> Unit)? = null) {
         val curX = this.x
         val curY = this.y
-        if (curX == endX && curY == endY) return
+        if (curX == endX && curY == endY) {
+            onEnd?.invoke()
+            return
+        }
         if (useAnimation) {
-            animateHelper.start(endX, endY)
+            animateHelper.start(endX, endY, onEnd)
         } else {
             updateXY(endX, endY)
+            onEnd?.invoke()
         }
         locationHelper.checkOrSaveLocation(endX, endY)
-        helper.fxLog.d("fxView -> moveToXY: start($curX,$curY),end($endX,$endY)")
+        //helper.fxLog.d("fxView -> moveToXY: start($curX,$curY),end($endX,$endY)")
     }
 
     internal fun preCancelAction() {

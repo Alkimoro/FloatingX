@@ -14,6 +14,8 @@ import com.petterp.floatingx.util.topActivity
 class FxAppControlImp(helper: FxAppHelper) :
     FxBasisControlImp<FxAppHelper, FxAppPlatformProvider>(helper), IFxAppControl {
 
+    private var disableReAttach = false
+
     override fun createPlatformProvider(f: FxAppHelper) = FxAppPlatformProvider(f, this)
 
     override fun getBindActivity(): Activity? {
@@ -33,8 +35,13 @@ class FxAppControlImp(helper: FxAppHelper) :
 
     @JvmSynthetic
     internal fun reAttach(activity: Activity) {
+        if (disableReAttach) return
         if (!platformProvider.reAttach(activity)) return
         show()
+    }
+
+    override fun disableReAttach() {
+        disableReAttach = true
     }
 
     @JvmSynthetic

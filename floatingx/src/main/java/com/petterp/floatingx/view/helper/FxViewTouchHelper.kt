@@ -117,7 +117,7 @@ class FxViewTouchHelper : FxViewBasicHelper() {
     private fun touchCancel(event: MotionEvent) {
         if (config.enableEdgeAdsorption && config.displayMode.canMove) basicView?.moveToEdge()
         basicView?.onTouchCancel(event)
-        config.iFxTouchListener?.onUp()
+        config.iFxTouchListener?.onUp(basicView?.getOutScreenPercentage() ?: 0F, isClickEvent)
         performClickAction()
         config.fxLog.d("fxView -> mainTouchUp")
     }
