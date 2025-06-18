@@ -19,7 +19,7 @@ dependencyResolutionManagement {
 rootProject.name = "FloatingX"
 //include ':app'
 include ':floatingx'
-include ':floatingx_compose'
+//include ':floatingx_compose'
 
 static Properties readPropertiesIfExist(File propertiesFile) {
     Properties result = new Properties()
