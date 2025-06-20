@@ -20,6 +20,7 @@ object FxAppLifecycleProvider : Application.ActivityLifecycleCallbacks {
 
     private var _currentActivity: WeakReference<Activity>? = null
     var updateCallback: ((activity: Activity) -> Unit)? = null
+    var allActDestroyCallback: (() -> Unit)? = null
     private val backgroundCallbacks = CopyOnWriteArrayList<(background: Boolean) -> Unit>()
 
     fun addBackgroundCallback(callback: (background: Boolean) -> Unit) {
@@ -82,6 +83,26 @@ object FxAppLifecycleProvider : Application.ActivityLifecycleCallbacks {
     }
 
     override fun onActivityDestroyed(activity: Activity) {
+        if (allActDestroyCallback == null) return
+
+        val activityManager =
+            (activity.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?) ?: return
+        val tasks = activityManager.appTasks
+        if (tasks != null && tasks.size > 0) {
+            kotlin.runCatching {
+                var actNum = 0
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    tasks.forEach { actNum += it.taskInfo.numActivities }
+                } else {
+                    val runningTasks = activityManager.getRunningTasks(10)
+                    runningTasks.forEach { actNum += it.numActivities }
+                }
+
+                if (actNum == 0) {
+                    allActDestroyCallback?.invoke()
+                }
+            }
+        }
     }
 
     private fun isActValid(activity: Activity?): Boolean {
