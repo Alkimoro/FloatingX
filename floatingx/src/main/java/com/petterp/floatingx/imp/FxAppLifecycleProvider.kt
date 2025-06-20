@@ -83,7 +83,7 @@ object FxAppLifecycleProvider : Application.ActivityLifecycleCallbacks {
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        if (allActDestroyCallback == null) return
+        if (allActDestroyCallback == null || onStartedCount > 0) return
 
         val activityManager =
             (activity.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?) ?: return
