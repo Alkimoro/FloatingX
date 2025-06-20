@@ -1,7 +1,10 @@
 package com.petterp.floatingx.imp
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Application
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
@@ -28,12 +31,18 @@ object FxAppLifecycleProvider : Application.ActivityLifecycleCallbacks {
 
     override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (!isActValid(activity)) return
+        if (!isActivityOnTop(activity)) {
+            return
+        }
 
         updateTopActivity(activity)
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (!isActValid(activity)) return
+        if (!isActivityOnTop(activity)) {
+            return
+        }
 
         updateTopActivity(activity)
     }
@@ -49,6 +58,10 @@ object FxAppLifecycleProvider : Application.ActivityLifecycleCallbacks {
 
     override fun onActivityResumed(activity: Activity) {
         if (!isActValid(activity)) return
+        //判断activity是否在top 不在top则不处理
+        if (!isActivityOnTop(activity)) {
+            return
+        }
 
         updateTopActivity(activity)
     }
@@ -82,6 +95,27 @@ object FxAppLifecycleProvider : Application.ActivityLifecycleCallbacks {
     }
 
     fun getTopActivity(): Activity? = _currentActivity?.get()
+
+    fun isActivityOnTop(activity: Activity): Boolean {
+        //如果服务获取不到则直接返回true
+        val activityManager =
+            (activity.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?) ?: return true
+        val tasks = activityManager.appTasks
+        if (tasks != null && tasks.size > 0) {
+            val topActivity = kotlin.runCatching {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    tasks[0].taskInfo.topActivity
+                } else {
+                    val runningTasks = activityManager.getRunningTasks(1)
+                    runningTasks[0].topActivity
+                }
+            }.getOrNull()
+            if (topActivity != null && topActivity.className == activity.javaClass.name) {
+                return true
+            }
+        }
+        return false
+    }
 
     private fun updateTopActivity(activity: Activity) {
         if (_currentActivity?.get() === activity) return

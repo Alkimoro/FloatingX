@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import com.petterp.floatingx.assist.helper.FxAppHelper
+import com.petterp.floatingx.imp.FxAppLifecycleProvider
 import com.petterp.floatingx.listener.IFxProxyTagActivityLifecycle
 import com.petterp.floatingx.util.FxLog
 import com.petterp.floatingx.util.decorView
@@ -38,7 +39,7 @@ class FxAppLifecycleImp(
         get() = appControl.getManagerView()?.parent === decorView
 
     private val Activity.isActivityInValid: Boolean
-        get() = helper.isCanInstall(this)
+        get() = helper.isCanInstall(this) && FxAppLifecycleProvider.isActivityOnTop(this)
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (!enableFx) return
