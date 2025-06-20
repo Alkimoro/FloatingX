@@ -28,12 +28,13 @@ class FxDefaultContainerView(helper: FxBasisHelper, context: Context, attrs: Att
         setBackgroundColor(Color.TRANSPARENT)
     }
 
+    @SuppressLint("RtlHardcoded")
     private fun initLayoutParams() {
         val lp = helper.layoutParams ?: LayoutParams(
             LayoutParams.WRAP_CONTENT,
             LayoutParams.WRAP_CONTENT,
         )
-        lp.apply { gravity = Gravity.START or Gravity.TOP }
+        lp.apply { gravity = Gravity.LEFT or Gravity.TOP }
         layoutParams = lp
     }
 
