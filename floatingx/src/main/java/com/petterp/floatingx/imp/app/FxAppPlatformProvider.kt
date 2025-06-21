@@ -244,14 +244,14 @@ class FxAppPlatformProvider(
             _containerGroup = WeakReference(nContainer)
 
             helper.onReAttach?.invoke()
-            _internalView?.animation?.cancel()
-            if (_internalView?.locationHelper?.selfNearestLeft() == false) {
-                _internalView?.animation = aniRight
-            } else {
-                _internalView?.animation = aniLeft
-            }
-            _internalView?.animation?.startOffset = 350
-            _internalView?.animation?.start()
+//            _internalView?.animation?.cancel()
+//            if (_internalView?.locationHelper?.selfNearestLeft() == false) {
+//                _internalView?.animation = aniRight
+//            } else {
+//                _internalView?.animation = aniLeft
+//            }
+//            _internalView?.animation?.startOffset = 350
+//            _internalView?.animation?.start()
         }
         return false
     }
