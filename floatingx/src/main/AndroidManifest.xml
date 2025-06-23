@@ -5,7 +5,7 @@
     <application>
         <provider
             android:name=".assist.FxContentProvider"
-            android:authorities="${applicationId}.fx.provider"
+            android:authorities="${applicationId}.fx.floating.provider"
             android:exported="false"
             android:multiprocess="true" />
     </application>
